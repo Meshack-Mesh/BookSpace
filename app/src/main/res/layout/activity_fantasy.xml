@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:id="@+id/fantasy">
 
     <!-- Top View (Header) -->
     <RelativeLayout
@@ -42,7 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/bottomNavigation"
-        android:layout_marginTop="35dp">
+        android:layout_marginTop="65dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -52,7 +53,7 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="78dp"
+                android:layout_marginTop="8dp"
                 android:background="@color/dark_green"
                 android:text="@string/add_to_favorite_genres"
                 android:gravity="center"
@@ -270,7 +271,7 @@
                         android:layout_marginTop="10dp">
 
                         <LinearLayout
-                            android:id="@+id/row_2"
+                            android:id="@+id/fanstasy_row"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal">
@@ -307,7 +308,7 @@
                         </LinearLayout>
 
                         <LinearLayout
-                            android:id="@+id/remaining_rows_2"
+                            android:id="@+id/fantasy_remaining"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
@@ -355,7 +356,7 @@
                         </LinearLayout>
 
                         <Button
-                            android:id="@+id/view_all_button2"
+                            android:id="@+id/view_all_button"
                             android:layout_width="400dp"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
@@ -459,7 +460,7 @@
                                 android:background="@color/dark_green"
                                 android:textAllCaps="false"
                                 android:textColor="@color/white"
-                                android:text="Borrow Book" />
+                                android:text="@string/borrow_book" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -540,6 +541,7 @@
         android:padding="10dp">
 
         <LinearLayout
+            android:id="@+id/homefantasy"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -559,6 +561,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/mybooksfantasy"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -578,6 +581,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/searchfantasy"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -597,6 +601,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/morefantasy"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -610,7 +615,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="More"
+                android:text="@string/More"
                 android:textSize="12sp"
                 android:gravity="center" />
         </LinearLayout>

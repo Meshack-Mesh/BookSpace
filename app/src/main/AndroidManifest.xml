@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,6 +15,42 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BookWorld"
         tools:targetApi="31">
+        <activity
+            android:name=".ViewBorrowedBooksActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity2"
+            android:exported="false" />
+        <activity
+            android:name=".LendBooksActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LendBookActivity"
+            android:exported="false" />
+        <activity
+            android:name=".BorrowBook"
+            android:exported="false" />
+        <activity
+            android:name=".Fiction"
+            android:exported="false" />
+        <activity
+            android:name=".Non_Fiction"
+            android:exported="false" />
+        <activity
+            android:name=".Group"
+            android:exported="false" />
+        <activity
+            android:name=".AddBookActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Business"
+            android:exported="false" />
+        <activity
+            android:name=".History"
+            android:exported="false" />
+        <activity
+            android:name=".More"
+            android:exported="false" />
         <activity
             android:name=".Notifications"
             android:exported="false" />
@@ -26,9 +65,6 @@
             android:exported="false" />
         <activity
             android:name=".comics"
-            android:exported="false" />
-        <activity
-            android:name=".comis"
             android:exported="false" />
         <activity
             android:name=".Technology"

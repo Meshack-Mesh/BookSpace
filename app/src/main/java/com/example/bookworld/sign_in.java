@@ -11,27 +11,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.GoogleAuthProvider;
-import java.util.regex.Pattern;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.HashMap;
+import java.util.Map;
 
 public class sign_in extends AppCompatActivity {
 
-    private static final int RC_SIGN_IN = 9001;
     private EditText emailEditText, usernameEditText, passwordEditText, confirmPasswordEditText;
     private Button signUpButton;
-    private TextView loginTextView, googleSignInTextView;
+    private TextView loginTextView;
     private FirebaseAuth mAuth;
-    private GoogleSignInClient mGoogleSignInClient;
+    private FirebaseFirestore db;
+    private DatabaseReference dbRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +36,8 @@ public class sign_in extends AppCompatActivity {
         setContentView(R.layout.activity_sign_in);
 
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+        dbRef = FirebaseDatabase.getInstance().getReference("users");
 
         emailEditText = findViewById(R.id.Email);
         usernameEditText = findViewById(R.id.Username);
@@ -46,13 +45,6 @@ public class sign_in extends AppCompatActivity {
         confirmPasswordEditText = findViewById(R.id.ConPassword);
         signUpButton = findViewById(R.id.buttonLogin);
         loginTextView = findViewById(R.id.CreateAccount);
-        googleSignInTextView = findViewById(R.id.google_text);
-
-        // Configure Google Sign In
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,13 +52,6 @@ public class sign_in extends AppCompatActivity {
                 if (validateFields()) {
                     signUp();
                 }
-            }
-        });
-
-        googleSignInTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                signInWithGoogle();
             }
         });
 
@@ -99,7 +84,7 @@ public class sign_in extends AppCompatActivity {
             usernameEditText.setError("Username is required");
             isValid = false;
         } else if (username.length() < 4 || username.length() > 10) {
-            usernameEditText.setError("Username must be between 5 and 10 characters");
+            usernameEditText.setError("Username must be between 4 and 10 characters");
             isValid = false;
         }
 
@@ -119,18 +104,17 @@ public class sign_in extends AppCompatActivity {
     }
 
     private void signUp() {
-        String email = emailEditText.getText().toString().trim();
+        final String email = emailEditText.getText().toString().trim();
+        final String username = usernameEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
 
         mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign up success, redirect to login activity
-                            Intent intent = new Intent(sign_in.this, login.class);
-                            startActivity(intent);
-                            finish(); // Optional, to close the sign_in activity
+                            // Sign up success, save user details to Firestore and Realtime Database
+                            saveUserDetails(email, username);
                         } else {
                             // If sign up fails, display a message to the user.
                             Toast.makeText(sign_in.this, "Authentication failed.",
@@ -140,50 +124,39 @@ public class sign_in extends AppCompatActivity {
                 });
     }
 
-    private boolean isValidPassword(String password) {
-        // Password must contain at least one letter and one number
-        return Pattern.compile("^(?=.*[0-9])(?=.*[a-zA-Z])(?=\\S+$).{8,}$").matcher(password).matches();
-    }
+    private void saveUserDetails(String email, String username) {
+        String userId = mAuth.getCurrentUser().getUid();
+        Map<String, Object> user = new HashMap<>();
+        user.put("email", email);
+        user.put("username", username);
 
-    private void signInWithGoogle() {
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
-        if (requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            try {
-                // Google Sign In was successful, authenticate with Firebase
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                firebaseAuthWithGoogle(account);
-            } catch (ApiException e) {
-                // Google Sign In failed, update UI appropriately
-                Toast.makeText(sign_in.this, "Google sign in failed",
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+        // Save to Firestore
+        db.collection("users").document(userId)
+                .set(user)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
+                    public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, redirect to main activity
-                            Intent intent = new Intent(sign_in.this, MainActivity.class);
-                            startActivity(intent);
-                            finish();
+                            Toast.makeText(sign_in.this, "User details saved.", Toast.LENGTH_SHORT).show();
                         } else {
-                            // If sign in fails, display a message to the user.
-                            Toast.makeText(sign_in.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(sign_in.this, "Failed to save user details to Firestore.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+        // Save to Realtime Database
+        dbRef.child(userId).setValue(user)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(sign_in.this, "User details saved to Realtime Database.", Toast.LENGTH_SHORT).show();
+                            // Redirect to home activity after saving user details
+                            Intent intent = new Intent(sign_in.this, login.class);
+                            startActivity(intent);
+                            finish(); // Optional, to close the sign_in activity
+                        } else {
+                            Toast.makeText(sign_in.this, "Failed to save user details to Realtime Database.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
